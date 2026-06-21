@@ -8,12 +8,17 @@ Requirements: pip install discord.py
 Run:          python discord_welcome_bot.py
 """
 
+import os
 import discord
 from discord.ext import commands
 from datetime import datetime, timedelta
+from dotenv import load_dotenv
+
+# ─── LOAD .ENV ───────────────────────────────────────────────────────────────
+load_dotenv()
 
 # ─── CONFIGURATION ───────────────────────────────────────────────────────────
-BOT_TOKEN = "MTUxODI5OTA2Nzg3OTI2NDQxOQ.G4tq61.K6WKlxKYSGIhjX1lUax4fw6J04W5nLL0R5ul6A"
+BOT_TOKEN = os.environ["DISCORD_BOT_TOKEN"]
 WELCOME_CHANNEL_ID = 1432803959256645645    # Target channel ID
 
 # ─── HUNGARIAN HELPERS ────────────────────────────────────────────────────────
@@ -55,7 +60,7 @@ def _hungarian_relative_datetime(dt: datetime, now: datetime) -> str:
 # ─── BOT SETUP ────────────────────────────────────────────────────────────────
 
 intents = discord.Intents.default()
-intents.members = True
+intents.members = True  # Required to receive on_member_join events
 intents.message_content = True
 
 bot = commands.Bot(command_prefix="!", intents=intents)
@@ -113,7 +118,7 @@ async def on_member_join(member: discord.Member):
 # ─── RUN ──────────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    if BOT_TOKEN == "MTUxODI5OTA2Nzg3OTI2NDQxOQ.G4tq61.K6WKlxKYSGIhjX1lUax4fw6J04W5nLL0R5ul6A":
-        print("⚠️  Kérlek, add meg a bot tokent a BOT_TOKEN változóban!")
+    if not BOT_TOKEN:
+        print("⚠️  DISCORD_BOT_TOKEN nincs beállítva a .env fájlban!")
     else:
         bot.run(BOT_TOKEN)
