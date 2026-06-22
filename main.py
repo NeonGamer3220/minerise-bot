@@ -68,14 +68,14 @@ async def on_member_join(member: discord.Member):
     timestamp_str = _hungarian_relative_datetime(member.joined_at, now)
 
     embed = discord.Embed(
-        title="Új harcos érkezett a MineRise-ra!",
+        title="⚔️ Új harcos érkezett a MineRise-ra!",
         description=(
-            f"Üdv a szerveren, {member.mention}, te vagy a **{member_count}.** tagunk!\n"
+            f"\nÜdv a szerveren, {member.mention}, te vagy a **{member_count}.** tagunk!\n"
             f"Szerverrel kapcsolatos információk:\n\n"
             f"🔋 Csatlakozás: **play.balkercraft.eu**\n"
             f"🌐 Discord: **dsc.gg/MineRise**\n"
             f"🛒 Webshop: **minerise.szerver.shop**\n\n"
-            f"Örülünk, hogy itt vagy. Nézz körül, érezd jól magad a MineRise közösségben.\n"
+            f"Örülünk, hogy itt vagy. Nézz körül, érezd jól magad a MineRise közösségben.\n\n"
             f"Felhasználó ID: {member.id} - {timestamp_str}"
         ),
         color=discord.Color.green(),
