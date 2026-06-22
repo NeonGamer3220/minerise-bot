@@ -8,6 +8,7 @@ load_dotenv()
 
 TOKEN = os.environ["DISCORD_BOT_TOKEN"]
 WELCOME_CHANNEL_ID = 1432803959256645645
+INVITE_LOG_CHANNEL_ID = 1432804189049851914
 
 HONAPOK = {
     1: "január", 2: "február", 3: "március", 4: "április",
@@ -44,6 +45,9 @@ intents.message_content = True
 
 bot = commands.Bot(command_prefix="!", intents=intents)
 
+# Meghívók cache-elése: {invite_code: uses}
+invite_cache: dict[str, int] = {}
+
 
 @bot.event
 async def on_ready():
@@ -53,11 +57,29 @@ async def on_ready():
         print(f"⚠️  Nem található a csatorna: {WELCOME_CHANNEL_ID}")
     else:
         print(f"✅ Üdvözlő csatorna megtalálva: #{channel.name}")
+
+    invite_channel = bot.get_channel(INVITE_LOG_CHANNEL_ID)
+    if invite_channel is None:
+        print(f"⚠️  Nem található a meghívó csatorna: {INVITE_LOG_CHANNEL_ID}")
+    else:
+        print(f"✅ Meghívó csatorna megtalálva: #{invite_channel.name}")
+
+    # Meghívók cache-elése
+    for guild in bot.guilds:
+        try:
+            invites = await guild.invites()
+            for inv in invites:
+                invite_cache[inv.code] = inv.uses
+            print(f"✅ {len(invite_cache)} meghívó cache-elve")
+        except discord.Forbidden:
+            print("⚠️  Nincs engedély a meghívók lekérdezéséhez! (Manage Server needed)")
+
     print("🚀 Bot készen áll, várakozás új tagokra...")
 
 
 @bot.event
 async def on_member_join(member: discord.Member):
+    # ── Üdvözlő üzenet ──────────────────────────────────────────────────
     channel = bot.get_channel(WELCOME_CHANNEL_ID)
     if channel is None:
         print(f"⚠️  Csatorna nem található ({WELCOME_CHANNEL_ID}), üzenet nem küldhető.")
@@ -88,6 +110,62 @@ async def on_member_join(member: discord.Member):
         print(f"❌ Nincs engedély üzenetküldésre a csatornában: {WELCOME_CHANNEL_ID}")
     except Exception as e:
         print(f"❌ Hiba az üzenet küldésekor: {e}")
+
+    # ── Meghívó log ─────────────────────────────────────────────────────
+    invite_channel = bot.get_channel(INVITE_LOG_CHANNEL_ID)
+    if invite_channel is None:
+        return
+
+    used_invite = None
+    try:
+        invites = await member.guild.invites()
+        for inv in invites:
+            old_uses = invite_cache.get(inv.code, 0)
+            if inv.uses > old_uses:
+                used_invite = inv
+                break
+    except discord.Forbidden:
+        print("⚠️  Nincs engedély a meghívók lekérdezéséhez!")
+        return
+
+    if used_invite and used_invite.inviter:
+        inviter = used_invite.inviter
+
+        inv_embed = discord.Embed(
+            title="📨 Új meghívás!",
+            description=f"{member.mention} csatlakozott a szerverre.",
+            color=discord.Color.blue(),
+        )
+        inv_embed.add_field(
+            name="Meghívó",
+            value=f"{inviter.mention} hívta meg",
+            inline=True,
+        )
+        inv_embed.add_field(
+            name="Hányadik meghívás",
+            value=f"Ez az inviter **{used_invite.uses}.** meghívottja",
+            inline=True,
+        )
+        inv_embed.add_field(
+            name="Meghívó kód",
+            value=f"`{used_invite.code}`",
+            inline=True,
+        )
+        inv_embed.set_footer(text=timestamp_str)
+
+        try:
+            await invite_channel.send(embed=inv_embed)
+            print(f"📨 Meghívó log: {inviter.name} -> {member.name}")
+        except discord.Forbidden:
+            print(f"❌ Nincs engedély a meghívó csatornában: {INVITE_LOG_CHANNEL_ID}")
+
+    # Cache frissítése
+    try:
+        invites = await member.guild.invites()
+        for inv in invites:
+            invite_cache[inv.code] = inv.uses
+    except Exception:
+        pass
 
 
 if __name__ == "__main__":
