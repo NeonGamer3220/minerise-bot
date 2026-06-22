@@ -1,0 +1,15 @@
+{
+  "$schema": "https://railway.app/railpack.schema.json",
+  "steps": [
+    {
+      "id": "install",
+      "args": ["pip", "install", "-r", "requirements.txt"]
+    }
+  ],
+  "build": {
+    "command": "echo build done"
+  },
+  "deploy": {
+    "startCommand": "python main.py"
+  }
+}
