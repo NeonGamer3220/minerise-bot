@@ -67,19 +67,22 @@ async def on_member_join(member: discord.Member):
     now = datetime.now(member.joined_at.tzinfo) if member.joined_at.tzinfo else datetime.now()
     timestamp_str = _hungarian_relative_datetime(member.joined_at, now)
 
-    welcome_message = (
-        f"⚔️ Új harcos érkezett a MineRise-ra!\n"
-        f"Üdv a szerveren, {member.mention}, te vagy a {member_count}. tagunk!\n"
-        f"Szerverrel kapcsolatos információk:\n\n"
-        f"🔋 Csatlakozás: play.balkercraft.eu\n"
-        f"🌐 Discord: dsc.gg/MineRise\n"
-        f"🛒 Webshop: minerise.szerver.shop\n\n"
-        f"Örülünk, hogy itt vagy. Nézz körül, érezd jól magad a MineRise közösségben.\n"
-        f"Felhasználó ID: {member.id} - {timestamp_str}"
+    embed = discord.Embed(
+        title="Új harcos érkezett a MineRise-ra!",
+        description=(
+            f"Üdv a szerveren, {member.mention}, te vagy a **{member_count}.** tagunk!\n"
+            f"Szerverrel kapcsolatos információk:\n\n"
+            f"🔋 Csatlakozás: **play.balkercraft.eu**\n"
+            f"🌐 Discord: **dsc.gg/MineRise**\n"
+            f"🛒 Webshop: **minerise.szerver.shop**\n\n"
+            f"Örülünk, hogy itt vagy. Nézz körül, érezd jól magad a MineRise közösségben.\n"
+            f"Felhasználó ID: {member.id} - {timestamp_str}"
+        ),
+        color=discord.Color.green(),
     )
 
     try:
-        await channel.send(welcome_message)
+        await channel.send(embed=embed)
         print(f"📩 Üdvözlő üzenet elküldve: {member.name} ({member.id})")
     except discord.Forbidden:
         print(f"❌ Nincs engedély üzenetküldésre a csatornában: {WELCOME_CHANNEL_ID}")
